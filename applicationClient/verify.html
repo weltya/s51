@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Vérification: client</title>
+    <meta charset="UTF-8" />
+
+    <link rel="stylesheet" href="css/index.css" />
+
+    <script src="js/aws-cognito-sdk.min.js"></script>
+    <script src="js/amazon-cognito-identity.min.js"></script>
+    <script src="js/jquery-3.1.0.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/cognito-auth.js"></script>
+  </head>
+
+  <body>
+    <div id="login-container">
+      <section class="form-wrap">
+        <h1>Confirmer email</h1>
+        <p>
+          Veuillez saisir votre adresse e-mail et le code de vérification envoyé
+          à cette adresse.
+        </p>
+        <form id="verifyForm">
+          <input
+            type="email"
+            id="emailInputVerify"
+            placeholder="Email"
+            required
+          /><br /><br />
+          <input
+            type="text"
+            id="codeInputVerify"
+            placeholder="Code Vérification "
+            pattern=".*"
+            required
+          /><br /><br />
+          <button class="signin-button" type="submit">Confirmer</button>
+        </form>
+      </section>
+    </div>
+  </body>
+</html>

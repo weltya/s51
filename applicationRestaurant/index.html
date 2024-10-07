@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>index: Restaurant</title>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="css/index.css" />
+
+    <script src="js/aws-cognito-sdk.min.js"></script>
+    <script src="js/amazon-cognito-identity.min.js"></script>
+    <script src="js/jquery-3.1.0.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/cognito-auth.js"></script>
+  </head>
+
+  <body>
+    <div id="login-container">
+      <section class="form-wrap">
+        <h1>Se connecter</h1>
+        <form id="signinForm">
+          <input
+            type="email"
+            id="emailInputSignin"
+            placeholder="Email"
+            required
+          />
+          <input
+            type="password"
+            id="passwordInputSignin"
+            placeholder="mot de passe"
+            pattern=".*"
+            required
+          />
+          <button class="signin-button" type="submit">Se connecter</button
+          ><br />
+          <p style="color: rgb(51, 51, 53); font-size: 15px">
+            Pas de compte ? clique <a href="register.html">ici</a> pour te créer
+            un compte
+          </p>
+        </form>
+      </section>
+    </div>
+  </body>
+</html>

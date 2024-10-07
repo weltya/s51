@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue: client</title>
+    <style>
+      body {
+        background-color: #f0f0f0;
+        color: #333;
+        font-family: Arial, sans-serif;
+      }
+
+      h1 {
+        color: #007bff;
+        margin: auto;
+      }
+      h2 {
+        color: #007bff;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      input[type="text"],
+      input[type="email"],
+      input[type="submit"] {
+        width: 100%;
+        padding: 10px;
+        margin: 5px 0;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      input[type="submit"] {
+        background-color: #007bff;
+        color: #fff;
+        cursor: pointer;
+      }
+
+      input[type="submit"]:hover {
+        background-color: #0056b3;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+
+      th {
+        background-color: #f2f2f2;
+      }
+    </style>
+    <script src="js/jquery-3.1.0.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/aws-cognito-sdk.min.js"></script>
+    <script src="js/amazon-cognito-identity.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/cognito-auth.js"></script>
+    <script src="js/session.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var signOutButton = document.getElementById("signOutButton");
+        if (signOutButton) {
+          signOutButton.addEventListener("click", signOut);
+        }
+
+        var token = localStorage.getItem("jwtToken");
+      });
+    </script>
+
+    <script>
+      async function callApi() {
+        Project.authToken
+          .then(function (jwtToken) {
+            if (jwtToken) {
+              fetch(
+                "https://2n037jkusl.execute-api.us-east-1.amazonaws.com/dev/userdata",
+                {
+                  method: "GET",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: jwtToken,
+                  },
+                }
+              )
+                .then((response) => {
+                  if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                  }
+                  return response.json();
+                })
+                .then((data) => {
+                  console.log(data);
+                  document.getElementById("apiResponse").innerText =
+                    JSON.stringify(data, null, 2);
+                })
+                .catch((error) => {
+                  console.error(
+                    "There has been a problem with your fetch operation:",
+                    error
+                  );
+                  document.getElementById("apiResponse").innerText =
+                    "Error calling API: " + error;
+                });
+            } else {
+              console.log("No valid JWT token found");
+            }
+          })
+          .catch((error) => {
+            console.error("Error getting the JWT token:", error);
+          });
+      }
+    </script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", (event) => {
+        const userPool = new AmazonCognitoIdentity.CognitoUserPool({
+          UserPoolId: _config.cognito.userPoolId,
+          ClientId: _config.cognito.userPoolClientId,
+        });
+
+        const cognitoUser = userPool.getCurrentUser();
+
+        if (cognitoUser != null) {
+          cognitoUser.getSession(function (err, session) {
+            if (err) {
+              console.error(err);
+              return;
+            }
+
+            cognitoUser.getUserAttributes(function (err, attributes) {
+              if (err) {
+                console.error(err);
+                return;
+              }
+
+              attributes.forEach((attribute) => {
+                const name = attribute.getName();
+                const value = attribute.getValue();
+
+                if (name === "email") {
+                  document.getElementById("userEmailDisplay").innerText = value;
+                } else if (name === "name") {
+                  document.getElementById("userNameDisplay").innerText = value;
+                } else if (name === "phone_number") {
+                  document.getElementById("userPhoneNumberDisplay").innerText =
+                    value;
+                }
+              });
+
+              const username = cognitoUser.getUsername();
+              document.getElementById("userUsernameDisplay").innerText =
+                username;
+            });
+          });
+        } else {
+          console.log("No user logged in.");
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="info panel panel-default"></div>
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-md-6 text-left">
+            <h2>Mes informations cognito</h2>
+            <div>
+              <span>Email : </span>
+              <span id="userEmailDisplay"></span><br />
+              <span>Nom : </span>
+              <span id="userNameDisplay"></span><br />
+              <span>Téléphone : </span>
+              <span id="userPhoneNumberDisplay"></span><br />
+              <span>Username : </span>
+              <span id="userUsernameDisplay"></span>
+            </div>
+          </div>
+          <br />
+          <div class="col-md-6 text-right">
+            <button id="signOutButton" class="btn btn-warning">
+              Se déconnecter
+            </button>
+          </div>
+        </div>
+      </div>
+      <br />
+      <br />
+      <h1>Vue Utilisateur</h1>
+      <h2>Ajouter une réservation</h2>
+      <label for="restaurantName">Nom restaurant</label><br />
+      <input type="text" name="restaurantName" id="restaurantName" /><br />
+
+      <label for="restaurantEmail">Email restaurant</label><br />
+      <input type="email" name="restaurantEmail" id="restaurantEmail" /><br />
+
+      <label for="restaurantPhone">Téléphone restaurant</label><br />
+      <input type="text" name="restaurantPhone" id="restaurantPhone" /><br />
+
+      <label for="reservationDate"
+        >Date réservation (JJ-MM-AAAA / 'midi' ou 'soir')</label
+      ><br />
+      <input type="text" name="reservationDate" id="reservationDate" /><br />
+
+      <br />
+      <input
+        type="submit"
+        id="saveReservation"
+        value="Enregistrer réservation"
+      />
+      <br />
+      <p id="reservationSaved"></p>
+
+      <br />
+      <br />
+      <h2>Afficher tous les restaurants</h2>
+      <div id="showRestaurants">
+        <table id="showRestaurantsTable">
+          <colgroup>
+            <col style="width: 20%" />
+            <col style="width: 20%" />
+            <col style="width: 20%" />
+            <col style="width: 20%" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Restaurant ID</th>
+              <th>Nom</th>
+              <th>Mail</th>
+              <th>Téléphone</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <br />
+        <br />
+        <input type="submit" id="getRestaurants" value="Voir les restaurants" />
+      </div>
+
+      <br />
+      <br />
+      <br />
+      <h2>Voir toutes mes réservations</h2>
+      <div id="showMyReservation">
+        <table id="clientReservationTable">
+          <colgroup>
+            <col style="width: 20%" />
+            <col style="width: 20%" />
+            <col style="width: 20%" />
+            <col style="width: 20%" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Nom</th>
+              <th>Mail</th>
+              <th>Téléphone</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <br />
+        <br />
+        <input
+          type="submit"
+          id="getClientReservation"
+          value="Voir mes réservations"
+        />
+      </div>
+    </div>
+
+    <script src="scripts.js"></script>
+    <script
+      type="text/javascript"
+      src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.0/jquery.min.js"
+    ></script>
+  </body>
+</html>
